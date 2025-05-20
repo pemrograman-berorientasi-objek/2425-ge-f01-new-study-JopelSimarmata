@@ -1,4 +1,5 @@
 package pbo;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
@@ -23,7 +24,11 @@ public class App {
   private static EntityManager em;
   private static EntityManagerFactory emf;
 
+  public static ArrayList<Student> Students = new ArrayList<Student>();
+  public static ArrayList<Course> Courses = new ArrayList<Course>();
+
   public static void main(String[] args) {
+    
 
     emf = Persistence.createEntityManagerFactory("study_plan_pu");
     em = emf.createEntityManager();
@@ -44,16 +49,38 @@ public class App {
 
       switch(data[0]){
         case "student-add":
-          Student student = new Student(data[1], data[2], data[3]);
-          em.getTransaction().begin();
-          em.persist(student);
-          em.getTransaction().commit();
+          Boolean cek = false;
+          for (Student student : Students) {
+            if (student.getNim().equals(data[1])) {
+                cek = true;
+                break;
+            }
+          }
+          
+          if(cek == false){
+            Student newstudent = new Student(data[1], data[2], data[3]);
+            Students.add(newstudent);
+            em.getTransaction().begin();
+            em.persist(newstudent);
+            em.getTransaction().commit();
+          }
           break;
         case "course-add":
-          Course course = new Course(data[1], data[2], data[3], data[4]);
-          em.getTransaction().begin();
-          em.persist(course);
-          em.getTransaction().commit();
+          Boolean cek2 = false;
+          for (Course course : Courses) {
+              if (course.getKode().equals(data[1])) {
+                  cek2 = true;
+                  break;
+              }
+          }
+          
+          if(cek2==false){
+            Course newcourse = new Course(data[1], data[2], data[3], data[4]);
+            Courses.add(newcourse);
+            em.getTransaction().begin();
+            em.persist(newcourse);
+            em.getTransaction().commit();
+          }
           break;
         case "student-show-all":
           ShowStudent();
@@ -114,19 +141,38 @@ public class App {
         em.getTransaction().begin();
         String jpql = "SELECT s FROM Student s WHERE s.nim = :nim";
         Student student = em.createQuery(jpql, Student.class).setParameter("nim", nim).getSingleResult();
-        System.out.println("Hasil pencarian :"+ student);
         em.getTransaction().commit();
       }
 
       private static void enroll(String nim, String kode){
+
+        boolean studentExists = false;
+        boolean courseExists = false;
+
+        for (Student student : Students) {
+            if (student.getNim().equals(nim)) {
+                studentExists = true;
+                break;
+            }
+        }
+
+        for (Course course : Courses) {
+            if (course.getKode().equals(kode)) {
+                courseExists = true;
+                break;
+            }
+        }
+
+        if(studentExists == false && courseExists == false){
         em.getTransaction().begin();
-        String queryCourse = "SELECT c FROM Course c WHERE c.kode = :kode";
-        String queryStudent = "SELECT s FROM Student s WHERE s.nim = :nim";
-        Student student = em.createQuery(queryStudent, Student.class).setParameter("nim", nim).getSingleResult();
-        Course course = em.createQuery(queryCourse,Course.class).setParameter("kode", kode).getSingleResult();
-        student.SetCourse(course);
-        course.setStudent(student);
-        em.getTransaction().commit();
+          String queryCourse = "SELECT c FROM Course c WHERE c.kode = :kode";
+          String queryStudent = "SELECT s FROM Student s WHERE s.nim = :nim";
+          Student student = em.createQuery(queryStudent, Student.class).setParameter("nim", nim).getSingleResult();
+          Course course = em.createQuery(queryCourse,Course.class).setParameter("kode", kode).getSingleResult();
+          student.SetCourse(course);
+          course.setStudent(student);
+          em.getTransaction().commit();
+        }
       }
 
       private static void studentShow(String nim){
