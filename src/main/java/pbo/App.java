@@ -146,24 +146,7 @@ public class App {
 
       private static void enroll(String nim, String kode){
 
-        boolean studentExists = false;
-        boolean courseExists = false;
 
-        for (Student student : Students) {
-            if (student.getNim().equals(nim)) {
-                studentExists = true;
-                break;
-            }
-        }
-
-        for (Course course : Courses) {
-            if (course.getKode().equals(kode)) {
-                courseExists = true;
-                break;
-            }
-        }
-
-        if(studentExists == false && courseExists == false){
         em.getTransaction().begin();
           String queryCourse = "SELECT c FROM Course c WHERE c.kode = :kode";
           String queryStudent = "SELECT s FROM Student s WHERE s.nim = :nim";
@@ -172,7 +155,7 @@ public class App {
           student.SetCourse(course);
           course.setStudent(student);
           em.getTransaction().commit();
-        }
+        
       }
 
       private static void studentShow(String nim){
@@ -182,9 +165,9 @@ public class App {
         
         for(Student s : students){
           System.out.println(s);
-          List<Course> courses = s.getCourses();
-          courses.sort(Comparator.comparing(Course::getKode));
-          for (Course c : courses){
+          List<Course> coursess = s.getCourses();
+          coursess.sort(Comparator.comparing(Course::getKode));
+          for (Course c : coursess){
             System.out.println(c);
           }
         }
